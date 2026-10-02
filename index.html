@@ -1,0 +1,1515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulation Engineering Toolkit 01 — Rust for Simulation Engineers</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,700&family=Geist+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #1c1815;
+            --bg-card: #231e1a;
+            --bg-code: #2b2520;
+            --text-primary: #efe8dc;
+            --text-secondary: #a2978b;
+            --accent: #aabd59;
+            --accent-dim: #aabd5944;
+            --accent-glow: #aabd5933;
+            --border: #3a322b;
+            --font-display: 'Bricolage Grotesque', sans-serif;
+            --font-mono: 'Geist Mono', 'Geist Mono', monospace;
+            --font-body: 'Instrument Sans', sans-serif;
+            --max-width: 900px;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            font-size: 17px;
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        /* ── Header ── */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .hero > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .series-label {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--accent);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+
+        .hero h1 {
+            font-family: var(--font-display);
+            font-size: clamp(2rem, 5vw, 3.2rem);
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+
+        .hero h1 .accent {
+            color: var(--accent);
+        }
+
+        .hero .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin-bottom: 2rem;
+        }
+
+        /* ── Tag Pills ── */
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .tag {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            background: var(--accent-dim);
+            white-space: nowrap;
+        }
+
+        /* ── Pipeline Flow Bar ── */
+        .pipeline {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+            margin-bottom: 1rem;
+            max-width: var(--max-width);
+        }
+
+        .pipeline-step {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            padding: 0.3rem 0.7rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .pipeline-arrow {
+            color: var(--accent);
+            font-size: 0.9rem;
+            font-weight: 700;
+        }
+
+        /* ── Slides ── */
+        .slide {
+            min-height: 100vh;
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 4rem 1.5rem;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .slide-number {
+            font-family: var(--font-display);
+            font-size: 5rem;
+            font-weight: 700;
+            color: var(--accent-dim);
+            position: absolute;
+            top: 2rem;
+            right: 1.5rem;
+            line-height: 1;
+            user-select: none;
+        }
+
+        .slide h2 {
+            font-family: var(--font-display);
+            font-size: 1.9rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+            line-height: 1.25;
+        }
+
+        .slide h3 {
+            font-family: var(--font-display);
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .slide p {
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .slide p strong {
+            color: var(--text-primary);
+        }
+
+        .slide ul, .slide ol {
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        .slide li {
+            margin-bottom: 0.4rem;
+        }
+
+        .slide li strong {
+            color: var(--text-primary);
+        }
+
+        /* ── Code Blocks ── */
+        .code-block {
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin: 1.25rem 0;
+            overflow: hidden;
+        }
+
+        .code-header {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--accent);
+            background: rgba(170,189,89,0.08);
+            padding: 0.4rem 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .code-block pre {
+            margin: 0;
+            padding: 1rem;
+            overflow-x: auto;
+        }
+
+        .code-block code {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: #dad1c5;
+        }
+
+        /* Syntax highlighting (manual) */
+        .kw { color: #de805a; }
+        .fn { color: #d7bbdf; }
+        .str { color: #bcdbd4; }
+        .cm { color: #a2978b; font-style: italic; }
+        .num { color: #97cdc6; }
+        .type { color: #e3b174; }
+        .dir { color: #de805a; }
+        .mac { color: #e3b174; }
+
+        /* ── Tables ── */
+        .table-wrap {
+            overflow-x: auto;
+            margin: 1.25rem 0;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background: var(--bg-code);
+            color: var(--accent);
+            font-weight: 600;
+            text-align: left;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+            font-family: var(--font-display);
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 0.6rem 1rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:nth-child(even) td {
+            background: rgba(35,30,26,0.5);
+        }
+
+        /* ── Diagrams ── */
+        .diagram-flow {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .diagram-box {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .diagram-box.accent {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(170,189,89,0.08);
+        }
+
+        .diagram-box.dim {
+            color: var(--text-secondary);
+            border-color: var(--border);
+        }
+
+        .diagram-arrow {
+            color: var(--accent);
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        /* Vertical flow diagrams */
+        .diagram-vertical {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .diagram-vertical .diagram-arrow {
+            font-size: 1.1rem;
+        }
+
+        /* Nested hierarchy diagram */
+        .hierarchy {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .hierarchy-level {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .hierarchy-label {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            min-width: 80px;
+            text-align: right;
+        }
+
+        .hierarchy-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+        }
+
+        .hierarchy-item {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        .hierarchy-item.accent {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(170,189,89,0.08);
+        }
+
+        /* Grid diagram */
+        .diagram-grid {
+            display: grid;
+            gap: 0.75rem;
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .diagram-grid.cols-2 {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .diagram-grid.cols-3 {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .diagram-panel {
+            padding: 1rem;
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+        }
+
+        .diagram-panel.accent-border {
+            border-left: 3px solid var(--accent);
+        }
+
+        .diagram-panel h4 {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .diagram-panel p, .diagram-panel ul {
+            font-size: 0.85rem;
+        }
+
+        /* ── Callout Boxes ── */
+        .callout {
+            background: var(--bg-card);
+            border-left: 3px solid var(--accent);
+            border-radius: 0 8px 8px 0;
+            padding: 1rem 1.25rem;
+            margin: 1.25rem 0;
+        }
+
+        .callout p {
+            margin-bottom: 0;
+        }
+
+        .callout .callout-label {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.3rem;
+        }
+
+        /* ── Tier Visual ── */
+        .tier-visual {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .tier-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .tier-label {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            min-width: 90px;
+            text-align: right;
+        }
+
+        .tier-fill {
+            height: 32px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            padding: 0 0.75rem;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            white-space: nowrap;
+            transition: width 0.6s ease;
+        }
+
+        .tier-cost {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            min-width: 70px;
+        }
+
+        /* ── Contents list ── */
+        .contents-list {
+            list-style: none;
+            padding-left: 0;
+            counter-reset: contents;
+        }
+
+        .contents-list li {
+            counter-increment: contents;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .contents-list li:last-child {
+            border-bottom: none;
+        }
+
+        .contents-list li::before {
+            content: counter(contents, decimal-leading-zero);
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--accent);
+            min-width: 2rem;
+        }
+
+        .contents-list a {
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .contents-list a:hover {
+            color: var(--accent);
+        }
+
+        /* ── Footer ── */
+        .footer {
+            text-align: center;
+            padding: 3rem 1.5rem;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border);
+            max-width: var(--max-width);
+            margin: 0 auto;
+        }
+
+        .footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 640px) {
+            .slide {
+                padding: 3rem 1rem;
+                min-height: auto;
+            }
+
+            .slide-number {
+                font-size: 3rem;
+                top: 1.5rem;
+                right: 1rem;
+            }
+
+            .slide h2 {
+                font-size: 1.5rem;
+            }
+
+            .diagram-grid.cols-2,
+            .diagram-grid.cols-3 {
+                grid-template-columns: 1fr;
+            }
+
+            .pipeline {
+                gap: 0.15rem;
+            }
+
+            .pipeline-step {
+                font-size: 0.6rem;
+                padding: 0.2rem 0.4rem;
+            }
+
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+
+            table {
+                font-size: 0.78rem;
+            }
+
+            .tier-label {
+                min-width: 60px;
+                font-size: 0.65rem;
+            }
+
+            .tier-fill {
+                font-size: 0.6rem;
+                height: 26px;
+            }
+        }
+
+        /* ── Interactive controls (added for Local LLM series) ── */
+        .control-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin: 1.25rem 0;
+        }
+        .control-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+        .control-row label {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            min-width: 180px;
+        }
+        .control-row input[type="range"] {
+            flex: 1;
+            min-width: 160px;
+            accent-color: var(--accent);
+        }
+        .control-row input[type="number"],
+        .control-row select {
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            border-radius: 4px;
+            padding: 0.3rem 0.5rem;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+        }
+        .control-row .val {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--accent);
+            min-width: 80px;
+            text-align: right;
+        }
+        .btn {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            padding: 0.4rem 0.9rem;
+            background: var(--accent-dim);
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+        .btn:hover { background: rgba(170,189,89,0.2); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn.secondary {
+            background: var(--bg-code);
+            color: var(--text-secondary);
+            border-color: var(--border);
+        }
+        .result-box {
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--accent);
+            border-radius: 4px;
+            padding: 0.75rem 1rem;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--text-primary);
+            margin-top: 0.75rem;
+        }
+        .result-box .line-label { color: var(--text-secondary); }
+        .result-box .line-val   { color: var(--accent); font-weight: 600; }
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+        .metric {
+            background: var(--bg-code);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.6rem 0.8rem;
+            text-align: center;
+        }
+        .metric .metric-label {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        .metric .metric-value {
+            font-family: var(--font-display);
+            font-size: 1.25rem;
+            color: var(--accent);
+            font-weight: 600;
+            margin-top: 0.2rem;
+        }
+
+        /* Canvas / SVG containers */
+        .canvas-wrap {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1.25rem 0;
+            overflow-x: auto;
+        }
+        .canvas-wrap canvas,
+        .canvas-wrap svg {
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+        }
+
+        /* Small inline badge */
+        .badge {
+            display: inline-block;
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            padding: 0.1rem 0.45rem;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            vertical-align: middle;
+            margin-left: 0.3rem;
+        }
+        .badge.ok    { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+        .badge.warn  { border-color: #e3b174; color: #e3b174; background: rgba(227,177,116,0.08); }
+        .badge.bad   { border-color: #de805a; color: #de805a; background: rgba(222,128,90,0.08); }
+
+
+        /* ── LLM Inference Simulators additions ── */
+        .canvas-wrap canvas { image-rendering: auto; display: block; width: 100%; height: auto; }
+        .canvas-wrap svg { max-width: 100%; height: auto; }
+        .ladder { display: grid; gap: 0.4rem; margin: 1.25rem 0; }
+        .ladder-row {
+            display: grid; grid-template-columns: 11rem 1fr 7.5rem; gap: 0.75rem; align-items: center;
+            background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px;
+            padding: 0.55rem 0.85rem; font-size: 0.88rem;
+        }
+        .ladder-row .rung { font-family: var(--font-display); font-weight: 600; color: var(--accent); }
+        .ladder-row .speed { font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-secondary); text-align: right; }
+        .res-list { list-style: none; padding: 0; margin: 0.75rem 0; }
+        .res-list li { padding: 0.6rem 0; border-bottom: 1px solid var(--border); font-size: 0.92rem; }
+        .res-list li:last-child { border-bottom: none; }
+        .res-list .what { color: var(--text-secondary); display: block; font-size: 0.86rem; margin-top: 0.15rem; }
+        .res-list a { color: var(--accent); text-decoration: none; }
+        .res-list a:hover { text-decoration: underline; }
+        .qa { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; margin: 0.6rem 0; padding: 0.2rem 1rem; }
+        .qa summary { cursor: pointer; padding: 0.6rem 0; font-weight: 600; }
+        .qa p, .qa ul { margin-bottom: 0.75rem; font-size: 0.92rem; }
+        .sim-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 0.4rem 1.25rem; }
+        .chart-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; }
+        .chart-title { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.3rem; }
+        .slide a { color: var(--accent); }
+        @media (max-width: 640px) {
+            .ladder-row { grid-template-columns: 1fr; gap: 0.2rem; }
+            .ladder-row .speed { text-align: left; }
+        }
+        .concepts { background: var(--bg-card); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 6px; padding: 0.75rem 1rem; margin-top: 1.25rem; font-size: 0.88rem; }
+        .concepts p { margin: 0 0 0.4rem; color: var(--text-secondary); }
+        .concepts .chips { display: flex; flex-wrap: wrap; gap: 0.35rem 0.5rem; }
+        .concepts .chips a { border: 1px solid var(--border); border-radius: 999px; padding: 0.1rem 0.6rem; text-decoration: none; font-size: 0.82rem; }
+        .concepts .chips a:hover { border-color: var(--accent); }
+        /* ── Simulation Engineering Toolkit additions ── */
+        .code-header a.src-link { color: var(--text-secondary); text-decoration: none; float: right; }
+        .code-header a.src-link:hover { color: var(--accent); text-decoration: underline; }
+        p.src { font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-secondary); margin: -0.75rem 0 1rem; }
+        p.src a { color: var(--text-secondary); }
+        .control-panel select, .control-panel input[type=number] { background: var(--bg-code); color: var(--text-primary); border: 1px solid var(--border); border-radius: 4px; padding: 0.2rem 0.4rem; font-family: var(--font-mono); font-size: 0.8rem; }
+        .mut-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 0.4rem 1rem; font-size: 0.85rem; }
+        .mut-grid label { display: flex; gap: 0.5rem; align-items: baseline; cursor: pointer; }
+        .mut-list { font-family: var(--font-mono); font-size: 0.78rem; line-height: 1.7; }
+        .mut-list .killed { color: var(--accent); }
+        .mut-list .survived { color: #de805a; }
+        .hero { overflow: hidden; }   /* the 600px glow must not widen the page on phones */
+        .chart-pair > *, .diagram-grid > *, .sim-grid > * { min-width: 0; }   /* let wide code scroll inside its column */
+        .slide p code, .slide li code, .slide td code { overflow-wrap: anywhere; }
+        .control-panel select { max-width: 100%; }
+    </style>
+</head>
+<body>
+
+<header class="hero">
+    <div class="series-label">Simulation Engineering Toolkit &mdash; Presentation 01</div>
+    <h1><span class="accent">Rust</span> for Simulation Engineers</h1>
+    <p class="subtitle">Why Rust suits discrete-event simulators, taught through a real kernel: a BinaryHeap event list with SimPy's tie-breaking, events as enums, ownership in an event loop (arenas and indices, not references), SimPy processes as explicit state machines, traits for cost models, error handling, rayon sweeps, and the cargo, clippy, rustfmt, proptest and criterion toolchain.</p>
+
+    <div class="tags">
+        <span class="tag">Ownership</span>
+        <span class="tag">BinaryHeap</span>
+        <span class="tag">Enums & traits</span>
+        <span class="tag">rayon</span>
+        <span class="tag">clippy</span>
+        <span class="tag">proptest</span>
+        <span class="tag">criterion</span>
+    </div>
+
+    <div class="pipeline">
+        <span class="pipeline-step">Events</span>
+        <span class="pipeline-arrow">&rarr;</span>
+        <span class="pipeline-step">Heap</span>
+        <span class="pipeline-arrow">&rarr;</span>
+        <span class="pipeline-step">Handle</span>
+        <span class="pipeline-arrow">&rarr;</span>
+        <span class="pipeline-step">Schedule</span>
+        <span class="pipeline-arrow">&rarr;</span>
+        <span class="pipeline-step">Test</span>
+        <span class="pipeline-arrow">&rarr;</span>
+        <span class="pipeline-step">Bench</span>
+    </div>
+</header>
+
+<section class="slide" id="slide-00">
+    <div class="slide-number">00</div>
+    <h2>Topics We'll Cover</h2>
+    <ul class="contents-list">
+        <li><a href="#slide-01">Why Rust for Simulators</a></li>
+        <li><a href="#slide-02">The Event List: BinaryHeap and Reverse</a></li>
+        <li><a href="#slide-03">Ordering Floats, Breaking Ties</a></li>
+        <li><a href="#slide-04">Interactive: The Event Queue's Ordering Rule</a></li>
+        <li><a href="#slide-05">Events as Enums, Models as Traits</a></li>
+        <li><a href="#slide-06">Ownership in an Event Loop</a></li>
+        <li><a href="#slide-07">From SimPy Processes to State Machines</a></li>
+        <li><a href="#slide-08">Traits for Pluggable Cost Models</a></li>
+        <li><a href="#slide-09">Errors: Result, the ? Operator, and When to Panic</a></li>
+        <li><a href="#slide-10">Fearless Parallel Sweeps</a></li>
+        <li><a href="#slide-11">The Toolchain: cargo, clippy, rustfmt, criterion</a></li>
+        <li><a href="#slide-12">Testing in Rust: cargo test and proptest</a></li>
+        <li><a href="#slide-13">What to Take Away</a></li>
+    </ul>
+    <div class="concepts">
+        <p><strong>Concepts used here, and where they are explained.</strong> Each links to a glossary entry: this <a href="https://brendanjameslynskey.github.io/SimEng_Hub_Toolkit/#glossary">series glossary</a>, or the glossaries of LLM Inference Simulators and FHE Accelerator Simulators for concepts those series already explain.</p>
+        <div class="chips"><a href="https://brendanjameslynskey.github.io/LLM_Hub_Inference_Simulators/#g-des" title="A simulator whose state changes only at instants (events). A clock, a state, a time-ordered event list and handlers; the clock jumps from one event to the next (next-event time advance), so idle time costs nothing.">Discrete-event simulation (DES)</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Inference_Simulators/#g-simpy" title="A small, pure-Python DES library: Environment, processes, timeouts, events, Resource, Container, Store and interrupts. It has no built-in statistics or tracing; the probes are yours to design.">SimPy</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Inference_Simulators/#g-process" title="Writing each entity&#x27;s life as one sequential function that suspends while it waits, instead of scattering it over event handlers. Python generators make this natural: yield an event, resume when it fires.">Process interaction and coroutines</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Inference_Simulators/#g-determinism" title="Same configuration and seed must give bit-identical results: break ties between simultaneous events with a sequence number, prefer integer time for clocked models, and give each component its own random stream.">Determinism, tie-breaking and RNG streams</a><a href="https://brendanjameslynskey.github.io/SimEng_Hub_Toolkit/#g-binaryheap" title="Rust&#x27;s standard priority queue is a max-heap; wrapping entries in std::cmp::Reverse makes it the min-heap an event list needs, so the earliest event pops first. Push and pop are O(log n).">BinaryHeap and Reverse</a><a href="https://brendanjameslynskey.github.io/SimEng_Hub_Toolkit/#g-totalcmp" title="f64 is only partially ordered because NaN compares unequal to everything. f64::total_cmp implements IEEE 754 totalOrder, which lets float times key a heap.">Total ordering of floats (total_cmp)</a><a href="https://brendanjameslynskey.github.io/SimEng_Hub_Toolkit/#g-tiebreak" title="Events at equal times are ordered by priority (SimPy&#x27;s URGENT before NORMAL) and then by a sequence number (first scheduled, first served), so the same inputs always give the same event order and the same answers.">Deterministic tie-breaking</a><a href="https://brendanjameslynskey.github.io/SimEng_Hub_Toolkit/#g-enums" title="Events are plain data (an enum of small, copyable variants) and the model handles them in a match; the compiler rejects a match that forgets a variant.">Events as enums; exhaustive match</a><a href="https://brendanjameslynskey.github.io/SimEng_Hub_Toolkit/#g-ownership" title="Every value has one owner; references borrow it, either shared (many readers) or exclusive (one writer), never both at once. The compiler enforces this, which rules out dangling references and data races.">Ownership and borrowing</a><a href="https://brendanjameslynskey.github.io/SimEng_Hub_Toolkit/#g-arena" title="The simulation owns all requests and instances in vectors; events and queues hold indices into them. Borrows last one statement, so the borrow checker is satisfied without Rc&lt;RefCell&gt;, and indices can be logged and replayed.">Arenas and indices</a><a href="https://brendanjameslynskey.github.io/SimEng_Hub_Toolkit/#g-statemachine" title="A SimPy process is a generator that sleeps at each yield. Without stable generators, Rust names those sleep points as states and lets each event resume the component from where it slept.">Processes as state machines</a><a href="https://brendanjameslynskey.github.io/SimEng_Hub_Toolkit/#g-traits" title="A trait is an interface. Generic code (&lt;C: CostModel&gt;) is compiled once per implementation and can inline calls; a trait object (Box&lt;dyn CostModel&gt;) chooses the implementation at run time through a vtable.">Traits; static and dynamic dispatch</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Inference_Simulators/#g-costmodel" title="The part of a simulator that answers &quot;how long does this take?&quot; (and, with a power model, &quot;how many joules?&quot;). Kept separate from the event engine so a roofline can later be replaced by a measured table or an RTL-calibrated model.">Cost model</a><a href="https://brendanjameslynskey.github.io/SimEng_Hub_Toolkit/#g-result" title="Expected failures (a bad configuration) return Result and propagate with ?; broken invariants (an event in the past) panic!, stopping the run at the point of the bug.">Result, ? and panic</a><a href="https://brendanjameslynskey.github.io/SimEng_Hub_Toolkit/#g-rayon" title="rayon turns iter() into par_iter() on a work-stealing thread pool. The Send and Sync traits let the compiler prove that what each thread touches is safe to share, so a data race is a compile error.">rayon, Send and Sync</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Inference_Simulators/#g-parallelruns" title="Independent runs parallelise trivially (processes, job arrays), but each technique only speeds up the share of time it touches; serial overheads cap the gain.">Parallel runs and Amdahl's law</a><a href="https://brendanjameslynskey.github.io/SimEng_Hub_Toolkit/#g-cargo" title="Rust&#x27;s build tool, linter and formatter. cargo clippy -- -D warnings fails the build on any lint; cargo fmt --check enforces one layout.">cargo, clippy and rustfmt</a><a href="https://brendanjameslynskey.github.io/SimEng_Hub_Toolkit/#g-criterion" title="A Rust benchmarking library: warm-up, many samples, confidence intervals and comparison with the previous run, so performance changes are measured rather than guessed.">criterion benchmarks</a><a href="https://brendanjameslynskey.github.io/SimEng_Hub_Toolkit/#g-proptest" title="Rust&#x27;s property-based testing library: strategies generate inputs, failures shrink, and failing seeds are saved in proptest-regressions/ and replayed first.">proptest</a><a href="https://brendanjameslynskey.github.io/LLM_Hub_Inference_Simulators/#g-queueing" title="Closed-form results that a simulator&#x27;s engine must reproduce: M/M/1 mean time in system 1/(μ−λ); M/D/1 mean wait λS²/(2(1−ρ)) (Pollaczek–Khinchine). The KV link is tested this way.">Queueing theory checks (M/M/1, M/D/1)</a></div>
+    </div>
+</section>
+
+<section class="slide" id="slide-01">
+    <div class="slide-number">01</div>
+    <h2>Why Rust for Simulators</h2>
+    <p>A discrete-event simulator is a long-running loop over a priority queue that mutates a lot of shared state. Python (SimPy) is the right place to <em>start</em>: quick to write, easy to read, a good reference model. When the same model has to run thousands of configurations a night, the core is usually rewritten in a compiled language. <a href="https://brendanjameslynskey.github.io/InfSim_02_Simulator_Development_Tutorial/#slide-12">LLM Inference Simulators 02, slide 12</a> sketched the options; this deck does the Rust one properly, using the code in <a href="https://github.com/BrendanJamesLynskey/Rust_DES_Kernel">Rust_DES_Kernel</a>.</p>
+    <div class="diagram-grid cols-2">
+        <div class="diagram-panel accent-border">
+            <h4>What Rust gives a simulator</h4>
+            <ul>
+                <li><strong>No garbage collector.</strong> Memory is freed deterministically when its owner goes out of scope, so there are no collection pauses in the middle of a billion-event run.</li>
+                <li><strong>Shared state made explicit.</strong> The borrow checker forces you to decide who owns each request, queue and counter. In a simulator, that is exactly the design question that causes bugs when it is left implicit.</li>
+                <li><strong>Fearless parallel sweeps.</strong> The compiler refuses to share mutable state between threads, so a parameter sweep across all cores is safe by construction.</li>
+                <li><strong>One toolchain.</strong> cargo builds, tests, benchmarks, formats and lints, with no build system to maintain.</li>
+            </ul>
+        </div>
+        <div class="diagram-panel accent-border">
+            <h4>What it costs</h4>
+            <ul>
+                <li><strong>No stable generators.</strong> SimPy's "a process is a generator that yields timeouts" has no direct equivalent: coroutines are nightly-only. Processes become explicit state machines (slide 07) or async tasks.</li>
+                <li><strong>A learning curve.</strong> Ownership and lifetimes take weeks to become natural, and the first design that occurs to you often does not compile (slide 06).</li>
+                <li><strong>Compile times</strong> are longer than C's, and much longer than Python's zero.</li>
+                <li><strong>A smaller simulation ecosystem</strong> than C++ (SystemC, gem5, SST) or Python (SimPy).</li>
+            </ul>
+        </div>
+    </div>
+    <div class="callout">
+        <div class="callout-label">The rule this deck follows</div>
+        <p>Keep the Python model as the reference and make the Rust port reproduce it <em>exactly</em>. Deck 02 is about how; this deck is about writing the Rust well.</p>
+    </div>
+</section>
+
+<section class="slide" id="slide-02">
+    <div class="slide-number">02</div>
+    <h2>The Event List: BinaryHeap and Reverse</h2>
+    <p>Every discrete-event kernel is a priority queue of future events and a clock. Rust's standard library has the queue: <code>std::collections::BinaryHeap</code>. It is a <strong>max</strong>-heap, so wrapping each entry in <code>std::cmp::Reverse</code> turns it into the min-heap a simulator needs: the earliest event comes out first.</p>
+    <div class="code-block">
+        <div class="code-header">src/kernel.rs: the scheduler's state <a class="src-link" href="https://github.com/BrendanJamesLynskey/Rust_DES_Kernel/blob/main/src/kernel.rs">source</a></div>
+        <pre><code><span class="cm">/// The event queue and the clock.</span>
+#[<span class="fn">derive</span>(<span class="type">Debug</span>)]
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="type">Scheduler</span>&lt;<span class="type">E</span>&gt; {
+    now: <span class="type">Time</span>,
+    seq: u64,
+    processed: u64,
+    <span class="cm">// `BinaryHeap` is a max-heap; `Reverse` turns it into the min-heap a DES needs.</span>
+    heap: <span class="type">BinaryHeap</span>&lt;<span class="type">Reverse</span>&lt;<span class="type">Entry</span>&lt;<span class="type">E</span>&gt;&gt;&gt;,
+}</code></pre>
+    </div>
+    <div class="code-block">
+        <div class="code-header">src/kernel.rs: scheduling (SimPy's env.timeout is schedule_in) <a class="src-link" href="https://github.com/BrendanJamesLynskey/Rust_DES_Kernel/blob/main/src/kernel.rs">source</a></div>
+        <pre><code><span class="cm">/// Schedule `event` at absolute time `at` (never in the past).</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="fn">schedule_at</span>(&amp;<span class="kw">mut</span> <span class="kw">self</span>, at: <span class="type">Time</span>, priority: <span class="type">Priority</span>, event: <span class="type">E</span>) {
+    <span class="mac">assert!</span>(!at.<span class="fn">is_nan</span>(), <span class="str">"event time is NaN"</span>);
+    <span class="mac">assert!</span>(
+        at &gt;= <span class="kw">self</span>.now,
+        <span class="str">"event scheduled in the past: {at} &lt; {}"</span>,
+        <span class="kw">self</span>.now
+    );
+    <span class="kw">self</span>.heap.<span class="fn">push</span>(<span class="type">Reverse</span>(<span class="type">Entry</span> {
+        time: at,
+        priority,
+        seq: <span class="kw">self</span>.seq,
+        event,
+    }));
+    <span class="kw">self</span>.seq += <span class="num">1</span>;
+}</code></pre>
+    </div>
+    <div class="code-block">
+        <div class="code-header">src/kernel.rs: popping advances the clock <a class="src-link" href="https://github.com/BrendanJamesLynskey/Rust_DES_Kernel/blob/main/src/kernel.rs">source</a></div>
+        <pre><code><span class="cm">/// Remove the next event and advance the clock to its time.</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="fn">pop</span>(&amp;<span class="kw">mut</span> <span class="kw">self</span>) -&gt; <span class="type">Option</span>&lt;(<span class="type">Time</span>, <span class="type">E</span>)&gt; {
+    <span class="kw">let</span> <span class="type">Reverse</span>(e) = <span class="kw">self</span>.heap.<span class="fn">pop</span>()?;
+    <span class="kw">self</span>.now = e.time;
+    <span class="kw">self</span>.processed += <span class="num">1</span>;
+    <span class="type">Some</span>((e.time, e.event))
+}</code></pre>
+    </div>
+    <ul>
+        <li><strong>Push and pop are O(log n).</strong> Calendar and ladder queues can do better for huge event lists, but a binary heap is almost always enough (the criterion numbers on slide 11 are with this heap).</li>
+        <li><strong>The clock only moves forward.</strong> The <code>assert!</code> turns "an event in the past" from a silent wrong answer into an immediate, located failure.</li>
+        <li><code>schedule_in</code> computes <code>now + delay</code> once, as SimPy does. That detail matters when you want two languages to agree to the last bit (deck 02).</li>
+    </ul>
+</section>
+
+<section class="slide" id="slide-03">
+    <div class="slide-number">03</div>
+    <h2>Ordering Floats, Breaking Ties</h2>
+    <p><code>BinaryHeap</code> needs its entries to be <code>Ord</code>: a total order. <code>f64</code> is only <code>PartialOrd</code>, because <code>NaN</code> compares unequal to everything, itself included. Rust makes you choose what to do about that, where C++ and Python let it slide.</p>
+    <div class="code-block">
+        <div class="code-header">src/kernel.rs: the ordering rule <a class="src-link" href="https://github.com/BrendanJamesLynskey/Rust_DES_Kernel/blob/main/src/kernel.rs">source</a></div>
+        <pre><code><span class="cm">// `f64` is not `Ord` (NaN), so order by `total_cmp`. Times are never NaN:</span>
+<span class="cm">// `schedule` rejects them.</span>
+<span class="kw">impl</span>&lt;<span class="type">E</span>&gt; <span class="type">Ord</span> <span class="kw">for</span> <span class="type">Entry</span>&lt;<span class="type">E</span>&gt; {
+    <span class="kw">fn</span> <span class="fn">cmp</span>(&amp;<span class="kw">self</span>, other: &amp;<span class="kw">Self</span>) -&gt; <span class="type">Ordering</span> {
+        <span class="kw">self</span>.time
+            .<span class="fn">total_cmp</span>(&amp;other.time)
+            .<span class="fn">then</span>(<span class="kw">self</span>.priority.<span class="fn">cmp</span>(&amp;other.priority))
+            .<span class="fn">then</span>(<span class="kw">self</span>.seq.<span class="fn">cmp</span>(&amp;other.seq))
+    }
+}</code></pre>
+    </div>
+    <div class="diagram-grid cols-3">
+        <div class="diagram-panel"><h4>1. Earlier time first</h4><p><code>f64::total_cmp</code> implements IEEE 754's totalOrder, so the comparison is total. <code>schedule_at</code> also rejects NaN, so the odd places it puts NaN never matter.</p></div>
+        <div class="diagram-panel"><h4>2. Urgent before normal</h4><p>SimPy gives process start-ups and interrupts priority URGENT at equal times. Copying that rule is what lets this kernel reproduce SimPy's event order.</p></div>
+        <div class="diagram-panel"><h4>3. First scheduled, first served</h4><p>A sequence number breaks every remaining tie. Without it, simultaneous events come out in an order that depends on the heap's internal layout.</p></div>
+    </div>
+    <div class="callout">
+        <div class="callout-label">Why ties are not a corner case</div>
+        <p>With integer token counts and identical prompts, two transfers often finish at exactly the same instant, and requests that arrive in bursts share a timestamp. The Rust_DES_Kernel golden and differential tests include fixed-length and bursty workloads built to create such ties, because that is where a wrong ordering rule would show (<a href="https://brendanjameslynskey.github.io/SimEng_02_Rust_Python_PyO3/#slide-09">deck 02, slide 09</a>). <a href="https://brendanjameslynskey.github.io/InfSim_02_Simulator_Development_Tutorial/#slide-10">LLM Inference Simulators 02, slide 10</a> lists the other determinism pitfalls.</p>
+    </div>
+</section>
+
+<section class="slide" id="slide-04">
+    <div class="slide-number">04</div>
+    <h2>Interactive: The Event Queue's Ordering Rule</h2>
+    <p>Schedule events, then pop them. The queue below is a real binary heap (the same algorithm as <code>BinaryHeap</code>). Switch the tie-break rule to see why the sequence number is there: without it, the order of simultaneous events depends on the order the heap happens to hold them in.</p>
+    <div class="control-panel">
+        <div class="sim-grid">
+            <div class="control-row"><label for="q-t">Time</label><input type="number" id="q-t" value="1.0" step="0.5" min="0" style="width:6rem"></div>
+            <div class="control-row"><label for="q-p">Priority</label><select id="q-p"><option value="1">Normal</option><option value="0">Urgent</option></select></div>
+            <div class="control-row"><label for="q-rule">Tie-break</label><select id="q-rule"><option value="fifo">time, priority, sequence (the kernel)</option><option value="none">time and priority only</option><option value="lifo">time, priority, newest first (a bug)</option></select></div>
+        </div>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin:0.75rem 0">
+            <button class="btn" id="q-add">Schedule</button>
+            <button class="btn" id="q-pop">Pop next</button>
+            <button class="btn" id="q-demo">Load the unit-test example</button>
+            <button class="btn" id="q-ties">Load six simultaneous events</button>
+            <button class="btn" id="q-clear">Clear</button>
+        </div>
+        <div class="metric-grid" id="q-m"></div>
+        <div class="chart-pair">
+            <div><div class="chart-title">Heap array (index 0 is the root)</div><div class="result-box" id="q-heap" style="min-height:4rem"></div></div>
+            <div><div class="chart-title">Popped, in order</div><div class="result-box" id="q-out" style="min-height:4rem"></div></div>
+        </div>
+    </div>
+    <script>
+    (function () {
+        const $ = id => document.getElementById(id);
+        let heap = [], seq = 0, now = 0, out = [], name = 0;
+        const rule = () => $('q-rule').value;
+        // a "less" comparator: earlier first, then urgent, then the selected tie-break
+        function less(a, b) {
+            if (a.t !== b.t) return a.t < b.t;
+            if (a.p !== b.p) return a.p < b.p;
+            if (rule() === 'fifo') return a.s < b.s;
+            if (rule() === 'lifo') return a.s > b.s;
+            return false;                                   // a tie: whatever the heap does
+        }
+        function push(e) {
+            heap.push(e); let i = heap.length - 1;
+            while (i > 0) { const p = (i - 1) >> 1; if (!less(heap[i], heap[p])) break; [heap[i], heap[p]] = [heap[p], heap[i]]; i = p; }
+        }
+        function pop() {
+            const top = heap[0], last = heap.pop();
+            if (heap.length) {
+                heap[0] = last; let i = 0;
+                for (;;) { const l = 2 * i + 1, r = l + 1; let m = i;
+                    if (l < heap.length && less(heap[l], heap[m])) m = l;
+                    if (r < heap.length && less(heap[r], heap[m])) m = r;
+                    if (m === i) break; [heap[i], heap[m]] = [heap[m], heap[i]]; i = m; }
+            }
+            return top;
+        }
+        const label = e => `${e.n} (t=${e.t}, ${e.p ? 'normal' : 'URGENT'}, seq ${e.s})`;
+        function schedule(t, p, n) {
+            if (!(t >= now)) { $('q-out').innerHTML = `<span class="line-label">refused</span> t=${t} is in the past (now=${now}): the kernel's assert! would fire here.<br>` + $('q-out').innerHTML; return; }
+            push({ t, p, s: seq++, n: n || 'e' + (name++) });
+            show();
+        }
+        function show() {
+            const cell = (l, v) => `<div class="metric"><div class="metric-label">${l}</div><div class="metric-value">${v}</div></div>`;
+            $('q-m').innerHTML = cell('Clock (now)', now) + cell('Pending', heap.length) + cell('Popped', out.length);
+            $('q-heap').innerHTML = heap.length ? heap.map((e, i) => `[${i}] ${label(e)}`).join('<br>') : '<span class="line-label">empty</span>';
+            $('q-out').innerHTML = out.length ? out.map((e, i) => `${i + 1}. ${label(e)}`).join('<br>') : '<span class="line-label">nothing yet</span>';
+        }
+        function reset() { heap = []; seq = 0; now = 0; out = []; name = 0; }
+        $('q-add').onclick = () => schedule(+$('q-t').value, +$('q-p').value);
+        $('q-pop').onclick = () => { if (heap.length) { const e = pop(); now = e.t; out.push(e); show(); } };
+        $('q-demo').onclick = () => { reset(); schedule(2, 1, 'late'); schedule(1, 1, 'n1'); schedule(1, 1, 'n2'); schedule(1, 0, 'urgent'); };
+        $('q-ties').onclick = () => { reset(); for (let k = 0; k < 6; k++) schedule(1, 1, 'tie' + k); };
+        $('q-clear').onclick = () => { reset(); show(); };
+        $('q-rule').onchange = () => { const items = heap.slice(); heap = []; items.forEach(push); show(); };
+        $('q-demo').onclick();
+    })();
+    </script>
+    <p>The "unit-test example" is the kernel's own test <code>earlier_first_then_urgent_then_fifo</code>: popping should give urgent, n1, n2, late. With six simultaneous events and no sequence number, the pop order is not the insertion order, and it changes if you insert in a different order: harmless here, fatal for reproducibility.</p>
+</section>
+
+<section class="slide" id="slide-05">
+    <div class="slide-number">05</div>
+    <h2>Events as Enums, Models as Traits</h2>
+    <p>In Python an event is usually a callback. In Rust it is more natural to make events plain data, an <code>enum</code>, and to let the model decide what each one means. The compiler then checks that every handler deals with every kind of event.</p>
+    <div class="chart-pair">
+        <div><div class="code-block">
+        <div class="code-header">src/kernel.rs: the whole model interface <a class="src-link" href="https://github.com/BrendanJamesLynskey/Rust_DES_Kernel/blob/main/src/kernel.rs">source</a></div>
+        <pre><code><span class="cm">/// A model reacts to one event at a time and may schedule more.</span>
+<span class="kw">pub</span> <span class="kw">trait</span> <span class="type">Model</span> {
+    <span class="kw">type</span> <span class="type">Event</span>;
+
+    <span class="cm">/// Handle one event. Return `false` to stop the run.</span>
+    <span class="kw">fn</span> <span class="fn">handle</span>(&amp;<span class="kw">mut</span> <span class="kw">self</span>, sched: &amp;<span class="kw">mut</span> <span class="type">Scheduler</span>&lt;<span class="kw">Self</span>::<span class="type">Event</span>&gt;, event: <span class="kw">Self</span>::<span class="type">Event</span>) -&gt; bool;
+}</code></pre>
+    </div></div>
+        <div><div class="code-block">
+        <div class="code-header">src/kernel.rs: the run loop <a class="src-link" href="https://github.com/BrendanJamesLynskey/Rust_DES_Kernel/blob/main/src/kernel.rs">source</a></div>
+        <pre><code><span class="cm">/// Run `model` until it asks to stop or the queue empties. Returns the final time.</span>
+<span class="kw">pub</span> <span class="kw">fn</span> run&lt;<span class="type">M</span>: <span class="type">Model</span>&gt;(model: &amp;<span class="kw">mut</span> <span class="type">M</span>, sched: &amp;<span class="kw">mut</span> <span class="type">Scheduler</span>&lt;<span class="type">M</span>::<span class="type">Event</span>&gt;) -&gt; <span class="type">Time</span> {
+    <span class="kw">while</span> <span class="kw">let</span> <span class="type">Some</span>((_, ev)) = sched.<span class="fn">pop</span>() {
+        <span class="kw">if</span> !model.<span class="fn">handle</span>(sched, ev) {
+            <span class="kw">break</span>;
+        }
+    }
+    sched.<span class="fn">now</span>()
+}</code></pre>
+    </div></div>
+    </div>
+    <div class="code-block">
+        <div class="code-header">src/queueing.rs: an M/D/1 queue in about twenty lines <a class="src-link" href="https://github.com/BrendanJamesLynskey/Rust_DES_Kernel/blob/main/src/queueing.rs">source</a></div>
+        <pre><code><span class="kw">impl</span> <span class="type">Model</span> <span class="kw">for</span> <span class="type">Md1</span> {
+    <span class="kw">type</span> <span class="type">Event</span> = <span class="type">Event</span>;
+
+    <span class="kw">fn</span> <span class="fn">handle</span>(&amp;<span class="kw">mut</span> <span class="kw">self</span>, s: &amp;<span class="kw">mut</span> <span class="type">Scheduler</span>&lt;<span class="type">Event</span>&gt;, ev: <span class="type">Event</span>) -&gt; bool {
+        <span class="kw">match</span> ev {
+            <span class="type">Event</span>::<span class="type">Arrive</span> =&gt; {
+                <span class="kw">self</span>.arrived += <span class="num">1</span>;
+                <span class="kw">if</span> <span class="kw">self</span>.arrived &lt; <span class="kw">self</span>.customers {
+                    <span class="kw">let</span> gap = <span class="kw">self</span>.rng.<span class="fn">expovariate</span>(<span class="kw">self</span>.rate);
+                    s.<span class="fn">schedule_in</span>(gap, <span class="type">Event</span>::<span class="type">Arrive</span>);
+                }
+                <span class="kw">if</span> <span class="kw">self</span>.busy {
+                    <span class="kw">self</span>.queue.<span class="fn">push_back</span>(s.<span class="fn">now</span>());
+                } <span class="kw">else</span> {
+                    <span class="kw">self</span>.<span class="fn">start_service</span>(s, s.<span class="fn">now</span>());
+                }
+            }
+            <span class="type">Event</span>::<span class="type">Depart</span> =&gt; {
+                <span class="kw">self</span>.served += <span class="num">1</span>;
+                <span class="kw">self</span>.busy = <span class="kw">false</span>;
+                <span class="kw">if</span> <span class="kw">let</span> <span class="type">Some</span>(t) = <span class="kw">self</span>.queue.<span class="fn">pop_front</span>() {
+                    <span class="kw">self</span>.<span class="fn">start_service</span>(s, t);
+                }
+            }
+        }
+        <span class="kw">self</span>.served &lt; <span class="kw">self</span>.customers
+    }
+}</code></pre>
+    </div>
+    <ul>
+        <li><strong>Exhaustive <code>match</code>.</strong> Add an event variant and every <code>match</code> that ignores it stops compiling. A forgotten callback in Python is a silent no-op.</li>
+        <li><strong>Events are small and <code>Copy</code></strong>: a tag and an index. An <code>Ev</code> is 16 bytes and a heap entry, with its time, priority and sequence number, 40 (pinned by a test), rather than a closure with captured state.</li>
+        <li>This M/D/1 model is checked against the Pollaczek&ndash;Khinchine formula in <code>tests/kernel.rs</code> (within 3% at loads 0.3, 0.6 and 0.8). An analytic check is the first test any new kernel should pass.</li>
+    </ul>
+</section>
+
+<section class="slide" id="slide-06">
+    <div class="slide-number">06</div>
+    <h2>Ownership in an Event Loop</h2>
+    <p>The first design most people write holds a reference to a request while calling a method on the simulation that owns it. The borrow checker rejects it, and it is right to: <code>finish()</code> could push to <code>requests</code>, reallocate the vector and leave <code>r</code> dangling. This is the real compiler output:</p>
+    <div class="chart-pair">
+        <div><div class="code-block">
+        <div class="code-header">borrow_error: rejected <a class="src-link" href="https://github.com/BrendanJamesLynskey/SimEng_Hub_Toolkit/blob/main/snippets/t01/borrow_error/src/main.rs">source</a></div>
+        <pre><code><span class="kw">impl</span> <span class="type">Sim</span> {
+    <span class="kw">fn</span> <span class="fn">finish</span>(&amp;<span class="kw">mut</span> <span class="kw">self</span>, r: &amp;<span class="kw">mut</span> <span class="type">Request</span>) {
+        r.finish = <span class="type">Some</span>(<span class="kw">self</span>.now);
+        <span class="kw">self</span>.done += <span class="num">1</span>;
+    }
+
+    <span class="kw">fn</span> <span class="fn">step</span>(&amp;<span class="kw">mut</span> <span class="kw">self</span>) {
+        <span class="kw">let</span> r = &amp;<span class="kw">mut</span> <span class="kw">self</span>.requests[<span class="num">0</span>];   <span class="cm">// a mutable borrow of part of self ...</span>
+        <span class="kw">self</span>.<span class="fn">finish</span>(r);                  <span class="cm">// ... while self is borrowed mutably again</span>
+    }
+}</code></pre>
+    </div></div>
+        <div><div class="code-block">
+        <div class="code-header">borrow_fixed: an index instead of a reference <a class="src-link" href="https://github.com/BrendanJamesLynskey/SimEng_Hub_Toolkit/blob/main/snippets/t01/borrow_fixed/src/main.rs">source</a></div>
+        <pre><code><span class="kw">impl</span> <span class="type">Sim</span> {
+    <span class="kw">fn</span> <span class="fn">finish</span>(&amp;<span class="kw">mut</span> <span class="kw">self</span>, rid: usize) {
+        <span class="kw">self</span>.requests[rid].finish = <span class="type">Some</span>(<span class="kw">self</span>.now);
+        <span class="kw">self</span>.done += <span class="num">1</span>;
+    }
+
+    <span class="kw">fn</span> <span class="fn">step</span>(&amp;<span class="kw">mut</span> <span class="kw">self</span>) {
+        <span class="kw">let</span> rid = <span class="num">0</span>;          <span class="cm">// events and queues carry indices into an arena</span>
+        <span class="kw">self</span>.<span class="fn">finish</span>(rid);
+    }
+}</code></pre>
+    </div></div>
+    </div>
+    <div class="code-block"><div class="code-header">cargo build (rustc 1.99), recorded in snippets/RESULTS.md</div><pre><code>error[E0499]: cannot borrow `*self` as mutable more than once at a time
+  --&gt; src/main.rs:15:9
+   |
+14 |         let r = &amp;mut self.requests[0];   // a mutable borrow of part of self ...
+   |                      ------------- first mutable borrow occurs here
+15 |         self.finish(r);                  // ... while self is borrowed mutably again
+   |         ^^^^        - first borrow later used here
+   |         |
+   |         second mutable borrow occurs here</code></pre></div>
+    <div class="canvas-wrap">
+        <svg viewBox="0 0 720 210" width="720" height="210" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The simulation owns vectors of requests and instances; events and queues hold indices into them">
+            <style>
+                .ob { fill: #2b2520; stroke: #aabd59; stroke-width: 1.5; }
+                .ob2 { fill: #2b2520; stroke: #e3b174; stroke-width: 1.5; }
+                .ot { fill: #efe8dc; font-family: 'Geist Mono', monospace; font-size: 11px; }
+                .od { fill: #a2978b; font-family: 'Geist Mono', monospace; font-size: 10px; }
+                .oh { fill: #aabd59; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 13px; }
+                .oa { stroke: #e3b174; stroke-width: 1.3; fill: none; marker-end: url(#oarr); }
+            </style>
+            <defs><marker id="oarr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e3b174"/></marker></defs>
+            <text x="10" y="18" class="oh">Simulation owns everything; everything else holds indices</text>
+            <rect x="10" y="32" width="250" height="165" rx="6" class="ob"/>
+            <text x="22" y="52" class="ot">Simulation</text>
+            <text x="22" y="74" class="od">reqs: Vec&lt;Request&gt;</text>
+            <text x="22" y="94" class="od">inst: Vec&lt;Instance&gt;</text>
+            <text x="22" y="114" class="od">kv_queue: VecDeque&lt;usize&gt;</text>
+            <text x="22" y="134" class="od">link: LinkStats</text>
+            <text x="22" y="160" class="od">handle(&amp;mut self, sched, ev)</text>
+            <text x="22" y="180" class="od">borrows end at each statement</text>
+            <rect x="320" y="36" width="170" height="44" rx="6" class="ob2"/>
+            <text x="332" y="56" class="ot">Ev::StepDone(2)</text><text x="332" y="72" class="od">event = tag + index</text>
+            <rect x="320" y="96" width="170" height="44" rx="6" class="ob2"/>
+            <text x="332" y="116" class="ot">Instance.queue</text><text x="332" y="132" class="od">VecDeque&lt;usize&gt; of rids</text>
+            <rect x="320" y="156" width="170" height="40" rx="6" class="ob2"/>
+            <text x="332" y="176" class="ot">InFlight::Prefill</text><text x="332" y="190" class="od">Vec&lt;usize&gt; batch</text>
+            <path d="M318,58 C290,58 285,94 262,94" class="oa"/>
+            <path d="M318,118 C290,118 285,74 262,74" class="oa"/>
+            <path d="M318,176 C290,176 285,80 262,76" class="oa"/>
+            <rect x="540" y="36" width="170" height="160" rx="6" class="ob"/>
+            <text x="552" y="56" class="ot">Not needed</text>
+            <text x="552" y="80" class="od">Rc&lt;RefCell&lt;Request&gt;&gt;</text>
+            <text x="552" y="98" class="od">lifetimes on events</text>
+            <text x="552" y="116" class="od">unsafe pointers</text>
+            <text x="552" y="148" class="od">An index is Copy,</text>
+            <text x="552" y="164" class="od">8 bytes, serialisable:</text>
+            <text x="552" y="180" class="od">log it, replay it.</text>
+        </svg>
+    </div>
+    <p>The pattern is an <strong>arena with indices</strong>: the simulation owns every request and instance in a <code>Vec</code>; events, queues and batches carry <code>usize</code> indices; each borrow lasts one statement. Where a loop must call <code>&amp;mut self</code> methods while walking a collection, take the collection out and put it back:</p>
+    <div class="code-block">
+        <div class="code-header">src/disagg/engine.rs: take, process, put back <a class="src-link" href="https://github.com/BrendanJamesLynskey/Rust_DES_Kernel/blob/main/src/disagg/engine.rs">source</a></div>
+        <pre><code><span class="cm">// Take the batch out so the loop can call `finish(&amp;mut self)`.</span>
+<span class="kw">let</span> running = std::mem::<span class="fn">take</span>(&amp;<span class="kw">mut</span> <span class="kw">self</span>.inst[i].running);
+<span class="kw">let</span> <span class="kw">mut</span> still = <span class="type">Vec</span>::<span class="fn">with_capacity</span>(running.<span class="fn">len</span>());
+<span class="kw">for</span> r <span class="kw">in</span> running {
+    <span class="kw">let</span> q = &amp;<span class="kw">mut</span> <span class="kw">self</span>.reqs[r];
+    q.itls.<span class="fn">push</span>(now - q.last_token);
+    q.tokens_out += <span class="num">1</span>;
+    q.last_token = now;
+    <span class="kw">if</span> q.tokens_out &gt;= q.output_len {
+        <span class="kw">self</span>.inst[i].kv_used -= <span class="kw">self</span>.<span class="fn">kv_need</span>(r);
+        <span class="kw">self</span>.<span class="fn">finish</span>(s, r);
+    } <span class="kw">else</span> {
+        still.<span class="fn">push</span>(r);
+    }
+}
+<span class="kw">self</span>.inst[i].running = still;</code></pre>
+    </div>
+</section>
+
+<section class="slide" id="slide-07">
+    <div class="slide-number">07</div>
+    <h2>From SimPy Processes to State Machines</h2>
+    <p>In SimPy, a prefill instance is a generator: "form a batch, <code>yield env.timeout(step)</code>, emit tokens, loop". Each <code>yield</code> is a point where the process sleeps. Without stable generators, the Rust engine names those sleep points as states and makes each event resume the instance from where it slept.</p>
+    <div class="canvas-wrap">
+        <svg viewBox="0 0 720 230" width="720" height="230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Prefill instance state machine: waiting, step in flight; events Wake and StepDone move between them">
+            <style>
+                .sb { fill: #2b2520; stroke: #aabd59; stroke-width: 1.5; }
+                .st { fill: #efe8dc; font-family: 'Geist Mono', monospace; font-size: 11.5px; }
+                .sd { fill: #a2978b; font-family: 'Geist Mono', monospace; font-size: 10px; }
+                .sh { fill: #aabd59; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 13px; }
+                .sa { stroke: #e3b174; stroke-width: 1.4; fill: none; marker-end: url(#sarr); }
+                .sl { fill: #e3b174; font-family: 'Geist Mono', monospace; font-size: 10.5px; }
+            </style>
+            <defs><marker id="sarr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e3b174"/></marker></defs>
+            <text x="10" y="18" class="sh">A prefill instance: two sleep points, two events</text>
+            <rect x="30" y="70" width="190" height="70" rx="8" class="sb"/>
+            <text x="44" y="94" class="st">Waiting</text>
+            <text x="44" y="112" class="sd">SimPy: yield self._wake</text>
+            <text x="44" y="128" class="sd">Rust: waiting = true</text>
+            <rect x="480" y="70" width="210" height="70" rx="8" class="sb"/>
+            <text x="494" y="94" class="st">Step in flight</text>
+            <text x="494" y="112" class="sd">SimPy: yield env.timeout(t)</text>
+            <text x="494" y="128" class="sd">Rust: inflight = Some(batch)</text>
+            <path d="M222,90 C320,60 380,60 478,90" class="sa"/>
+            <text x="260" y="56" class="sl">Ev::Wake: form batch, schedule StepDone</text>
+            <path d="M478,124 C380,160 320,160 222,124" class="sa"/>
+            <text x="250" y="178" class="sl">Ev::StepDone, queue empty: account, emit tokens</text>
+            <path d="M600,142 C640,200 540,215 560,145" class="sa"/>
+            <text x="470" y="222" class="sl">Ev::StepDone, queue not empty: next batch</text>
+            <path d="M110,140 C90,190 150,195 130,145" class="sa"/>
+            <text x="20" y="205" class="sl">submit while busy: just queue</text>
+        </svg>
+    </div>
+    <div class="code-block">
+        <div class="code-header">src/disagg/engine.rs: submit wakes a waiting instance exactly once, as SimPy's _wake.succeed() does <a class="src-link" href="https://github.com/BrendanJamesLynskey/Rust_DES_Kernel/blob/main/src/disagg/engine.rs">source</a></div>
+        <pre><code><span class="kw">fn</span> <span class="fn">submit</span>(&amp;<span class="kw">mut</span> <span class="kw">self</span>, s: &amp;<span class="kw">mut</span> <span class="type">Scheduler</span>&lt;<span class="type">Ev</span>&gt;, i: usize, rid: usize) {
+    <span class="kw">let</span> inst = &amp;<span class="kw">mut</span> <span class="kw">self</span>.inst[i];
+    inst.queue.<span class="fn">push_back</span>(rid);
+    <span class="kw">if</span> inst.waiting &amp;&amp; !inst.wake_triggered {
+        inst.wake_triggered = <span class="kw">true</span>;
+        s.<span class="fn">schedule_now</span>(<span class="type">Ev</span>::<span class="type">Wake</span>(i));
+    }
+}</code></pre>
+    </div>
+    <p>The flag <code>wake_triggered</code> mirrors SimPy's rule that an event already triggered is not triggered again. It matters only when two requests reach a <em>waiting</em> instance before its wake-up runs, and ordinary Poisson workloads never do that. A bursty workload does: requests queue behind a busy prefill, leave in one batch, and their KV transfers finish together into an idle decoder. That case is now a golden test; with the flag removed, the engine wakes the decoder twice and its invariant check stops the run with "a step was in flight" (slide 09). Async Rust is the other route to process-style code; the explicit machine was chosen here because its event order is easy to reason about and to match against SimPy.</p>
+</section>
+
+<section class="slide" id="slide-08">
+    <div class="slide-number">08</div>
+    <h2>Traits for Pluggable Cost Models</h2>
+    <p>The most important structural decision in an architecture simulator is to keep <em>time</em> in one replaceable place (<a href="https://brendanjameslynskey.github.io/InfSim_02_Simulator_Development_Tutorial/#slide-09">LLM Inference Simulators 02, slide 09</a>). In Rust that place is a trait. This example compiles and its tests pass (snippets/RESULTS.md):</p>
+    <div class="code-block">
+        <div class="code-header">cost_trait/src/lib.rs: the contract <a class="src-link" href="https://github.com/BrendanJamesLynskey/SimEng_Hub_Toolkit/blob/main/snippets/t01/cost_trait/src/lib.rs">source</a></div>
+        <pre><code><span class="cm">/// What every cost model must answer. The engine knows nothing else about time.</span>
+<span class="kw">pub</span> <span class="kw">trait</span> <span class="type">CostModel</span> {
+    <span class="kw">fn</span> <span class="fn">prefill</span>(&amp;<span class="kw">self</span>, tokens: u64) -&gt; f64;
+    <span class="kw">fn</span> <span class="fn">decode</span>(&amp;<span class="kw">self</span>, batch: u64, context: u64) -&gt; f64;
+}</code></pre>
+    </div>
+    <div class="code-block">
+        <div class="code-header">cost_trait/src/lib.rs: two ways to use it <a class="src-link" href="https://github.com/BrendanJamesLynskey/SimEng_Hub_Toolkit/blob/main/snippets/t01/cost_trait/src/lib.rs">source</a></div>
+        <pre><code><span class="cm">/// Static dispatch: one copy of the engine per cost model, every call inlinable.</span>
+<span class="kw">pub</span> <span class="kw">fn</span> total_decode_time&lt;<span class="type">C</span>: <span class="type">CostModel</span>&gt;(cost: &amp;<span class="type">C</span>, steps: u64) -&gt; f64 {
+    (<span class="num">0</span>..steps).<span class="fn">map</span>(|k| cost.<span class="fn">decode</span>(<span class="num">8</span>, <span class="num">4096</span> + <span class="num">8</span> * k)).<span class="fn">sum</span>()
+}</code></pre>
+    </div>
+    <div class="table-wrap"><table>
+        <thead><tr><th></th><th>Generic <code>&lt;C: CostModel&gt;</code></th><th><code>Box&lt;dyn CostModel&gt;</code></th></tr></thead>
+        <tbody>
+            <tr><td>Dispatch</td><td>Static: the engine is compiled once per cost model (monomorphisation)</td><td>Dynamic: one engine, a virtual call through a vtable</td></tr>
+            <tr><td>Speed</td><td>Calls can be inlined; best for the innermost loop</td><td>One indirect call per use; usually negligible next to a step's work</td></tr>
+            <tr><td>Choice made</td><td>At compile time</td><td>At run time, from a configuration file</td></tr>
+            <tr><td>Use it for</td><td>The hot path once the model is fixed</td><td>Swapping roofline, measured tables and calibrated models without rebuilding</td></tr>
+        </tbody>
+    </table></div>
+    <p>Rust_DES_Kernel itself uses one concrete <code>CostModel</code> struct, because its job is to mirror one Python class exactly. A trait is the next step when a second model (a measured table, a calibrated fit) has to plug in.</p>
+</section>
+
+<section class="slide" id="slide-09">
+    <div class="slide-number">09</div>
+    <h2>Errors: Result, the ? Operator, and When to Panic</h2>
+    <p>Rust separates two kinds of failure, and a simulator has both.</p>
+    <div class="diagram-grid cols-2">
+        <div class="diagram-panel accent-border">
+            <h4>Expected failures: return a <code>Result</code></h4>
+            <p>A user asks for a link that does not exist, or a power cap below idle power. The function returns <code>Err</code>, the caller decides, and <code>?</code> passes the error upward in one character. At the Python boundary, the same error becomes a <code>ValueError</code>.</p>
+        </div>
+        <div class="diagram-panel accent-border">
+            <h4>Broken invariants: <code>panic!</code></h4>
+            <p>An event scheduled in the past, or a step completing on an instance with nothing in flight, means the simulator itself is wrong. Carrying on would produce plausible nonsense, so the kernel stops at once, with a message pointing at the cause. <code>#[should_panic]</code> tests that it does.</p>
+        </div>
+    </div>
+    <div class="code-block">
+        <div class="code-header">src/disagg/engine.rs: configuration errors are values <a class="src-link" href="https://github.com/BrendanJamesLynskey/Rust_DES_Kernel/blob/main/src/disagg/engine.rs">source</a></div>
+        <pre><code><span class="kw">pub</span> <span class="kw">fn</span> <span class="fn">build</span>(&amp;<span class="kw">self</span>) -&gt; <span class="type">Result</span>&lt;<span class="type">SimConfig</span>, <span class="type">ConfigError</span>&gt; {
+    <span class="kw">let</span> unknown = |what: &amp;str, v: &amp;str| <span class="type">ConfigError</span>(<span class="mac">format!</span>(<span class="str">"unknown {what} {v:?}"</span>));
+    <span class="kw">let</span> mode = <span class="kw">match</span> <span class="kw">self</span>.mode.<span class="fn">as_str</span>() {
+        <span class="str">"disagg"</span> =&gt; <span class="type">Mode</span>::<span class="type">Disagg</span>,
+        <span class="str">"colocated"</span> =&gt; <span class="type">Mode</span>::<span class="type">Colocated</span>,
+        m =&gt; <span class="kw">return</span> <span class="type">Err</span>(<span class="fn">unknown</span>(<span class="str">"mode"</span>, m)),
+    };
+    <span class="kw">let</span> <span class="kw">mut</span> link = hardware::<span class="fn">link</span>(&amp;<span class="kw">self</span>.link).<span class="fn">ok_or_else</span>(|| <span class="fn">unknown</span>(<span class="str">"link"</span>, &amp;<span class="kw">self</span>.link))?;</code></pre>
+    </div>
+    <div class="code-block">
+        <div class="code-header">src/python.rs: and become Python exceptions at the boundary <a class="src-link" href="https://github.com/BrendanJamesLynskey/Rust_DES_Kernel/blob/main/src/python.rs">source</a></div>
+        <pre><code><span class="cm">/// Run one simulation. Returns (per-request stamps, summary JSON, events processed,</span>
+<span class="cm">/// seconds simulating, seconds summarising).</span>
+#[pyfunction]
+#[<span class="fn">pyo3</span>(signature = (config_json, rows, with_summary=<span class="kw">true</span>))]
+<span class="kw">fn</span> <span class="fn">simulate_json</span>(
+    py: <span class="type">Python</span>&lt;'_&gt;,
+    config_json: &amp;str,
+    rows: <span class="type">Vec</span>&lt;<span class="type">Row</span>&gt;,
+    with_summary: bool,
+) -&gt; <span class="type">PyResult</span>&lt;<span class="type">Output</span>&gt; {
+    <span class="kw">let</span> spec = <span class="fn">spec</span>(config_json)?;
+    <span class="cm">// The GIL is released for the whole run: nothing in here touches Python.</span>
+    py.<span class="fn">detach</span>(|| <span class="fn">run_one</span>(&amp;spec, &amp;rows, with_summary))
+        .<span class="fn">map_err</span>(<span class="type">PyValueError</span>::new_err)
+}</code></pre>
+    </div>
+    <div class="callout">
+        <div class="callout-label">A useful habit</div>
+        <p>Validate everything when the configuration is built, so that once a run starts, the only possible failures are bugs. Rust_DES_Kernel's <code>ConfigSpec</code> also uses <code>#[serde(deny_unknown_fields)]</code>, so a misspelt option in a JSON config is an error rather than a silently ignored default.</p>
+    </div>
+</section>
+
+<section class="slide" id="slide-10">
+    <div class="slide-number">10</div>
+    <h2>Fearless Parallel Sweeps</h2>
+    <p>Architecture questions are answered by sweeps: rates, pool sizes, links, power caps. Independent runs share nothing, so they parallelise perfectly. The <a href="https://docs.rs/rayon">rayon</a> crate turns <code>iter()</code> into <code>par_iter()</code>, and the compiler checks the rest.</p>
+    <div class="code-block">
+        <div class="code-header">src/bin/disagg-rs.rs: a rate sweep across all cores <a class="src-link" href="https://github.com/BrendanJamesLynskey/Rust_DES_Kernel/blob/main/src/bin/disagg-rs.rs">source</a></div>
+        <pre><code><span class="cm">// Independent runs share nothing, so rayon can farm them out safely:</span>
+<span class="cm">// the compiler checks that each closure only reads `cfg`.</span>
+<span class="kw">let</span> rows: <span class="type">Vec</span>&lt;<span class="type">String</span>&gt; = a
+    .sweep
+    .<span class="fn">par_iter</span>()
+    .<span class="fn">map</span>(|&amp;rate| {
+        <span class="kw">let</span> m = <span class="fn">summarise</span>(&amp;<span class="fn">simulate</span>(cfg.<span class="fn">clone</span>(), <span class="fn">wl</span>(rate)).<span class="fn">expect</span>(<span class="str">"valid config"</span>));
+        <span class="kw">let</span> g = |p: &amp;[&amp;str]| {
+            p.<span class="fn">iter</span>()
+                .<span class="fn">fold</span>(&amp;m, |v, k| &amp;v[*k])
+                .<span class="fn">as_f64</span>()
+                .<span class="fn">unwrap_or</span>(f64::<span class="type">NAN</span>)
+        };
+        <span class="mac">format!</span>(
+            <span class="str">"{rate},{:.6},{:.6},{:.4},{:.4}"</span>,
+            <span class="fn">g</span>(&amp;[<span class="str">"latency_s"</span>, <span class="str">"ttft"</span>, <span class="str">"p99"</span>]),
+            <span class="fn">g</span>(&amp;[<span class="str">"latency_s"</span>, <span class="str">"tpot"</span>, <span class="str">"p99"</span>]),
+            <span class="fn">g</span>(&amp;[<span class="str">"throughput"</span>, <span class="str">"slo_attainment"</span>]),
+            <span class="fn">g</span>(&amp;[<span class="str">"energy"</span>, <span class="str">"J_per_output_token"</span>])
+        )
+    })
+    .<span class="fn">collect</span>();</code></pre>
+    </div>
+    <ul>
+        <li><strong>Why it is safe.</strong> The closure captures <code>cfg</code> by shared reference and clones it per run. If it tried to mutate shared state, it would not be <code>Send</code>/<code>Sync</code> and would not compile. A data race is a compile error, not a heisenbug in a nightly job.</li>
+        <li><strong>Why order is preserved.</strong> <code>collect()</code> on a parallel iterator keeps the input order, so the CSV comes out in rate order however the work was scheduled.</li>
+        <li><strong>Measured.</strong> Eight 4,000-request runs on this 4-core, 8-thread machine:</li>
+    </ul>
+    <div class="table-wrap"><table>
+<thead><tr><th>What</th><th>Runs</th><th>Wall time</th><th>Speed-up over sequential</th></tr></thead>
+<tbody>
+<tr><td>Rust via PyO3, sequential</td><td>8 x 4,000 requests</td><td>0.460 s</td><td>1.0x</td></tr>
+<tr><td>Rust via PyO3, 8 Python threads (GIL released)</td><td>8 x 4,000 requests</td><td>0.167 s</td><td>2.8x</td></tr>
+<tr><td>Rust <code>simulate_many</code> (rayon, one call)</td><td>8 x 4,000 requests</td><td>0.175 s</td><td>2.6x</td></tr>
+<tr><td>Python SimPy, sequential</td><td>4 x 1,000 requests</td><td>1.05 s</td><td>1.0x</td></tr>
+<tr><td>Python SimPy, 4 threads (GIL held)</td><td>4 x 1,000 requests</td><td>2.70 s</td><td>0.4x</td></tr>
+<tr><td>Python SimPy, 4 processes</td><td>4 x 1,000 requests</td><td>0.31 s</td><td>3.3x</td></tr>
+</tbody></table></div>
+    <p class="src">Source: <a href="https://github.com/BrendanJamesLynskey/Rust_DES_Kernel/blob/main/examples/results.md">examples/results.md</a> in Rust_DES_Kernel</p>
+    <p>The rows that matter here are the first three: rayon inside one call, or plain Python threads calling a Rust function that releases the GIL, both reach about 3&times; on four physical cores. Deck 02 explains the GIL rows.</p>
+</section>
+
+<section class="slide" id="slide-11">
+    <div class="slide-number">11</div>
+    <h2>The Toolchain: cargo, clippy, rustfmt, criterion</h2>
+    <div class="table-wrap"><table>
+        <thead><tr><th>Command</th><th>What it does</th><th>In Rust_DES_Kernel</th></tr></thead>
+        <tbody>
+            <tr><td><code>cargo build --release</code></td><td>Compile with optimisation; dependencies from <code>Cargo.toml</code></td><td><code>[profile.release]</code> adds thin LTO and one codegen unit</td></tr>
+            <tr><td><code>cargo fmt --check</code></td><td>rustfmt: one canonical layout, so diffs show logic, not style</td><td>Enforced in CI</td></tr>
+            <tr><td><code>cargo clippy -- -D warnings</code></td><td>Hundreds of lints; <code>-D warnings</code> makes any finding fail the build</td><td>It flagged <code>!(v &gt; bv)</code> on floats (<code>neg_cmp_op_on_partial_ord</code>): with NaN that is not the same as <code>v &lt;= bv</code>, so the code now says which it means</td></tr>
+            <tr><td><code>cargo test</code></td><td>Unit tests in each module, integration tests in <code>tests/</code>, doc tests</td><td>The full inventory is in <a href="https://brendanjameslynskey.github.io/SimEng_06_Testing_Frameworks/#slide-11">deck 06, slide 11</a></td></tr>
+            <tr><td><code>cargo bench</code></td><td><a href="https://docs.rs/criterion">criterion</a>: warm-up, many samples, confidence intervals, change detection</td><td>The numbers below</td></tr>
+            <tr><td><code>cargo llvm-cov</code>, <code>cargo mutants</code>, <code>cargo nextest</code></td><td>Coverage, mutation testing and a faster test runner with JUnit output</td><td>Deck 06 and the Jenkins pipeline</td></tr>
+        </tbody>
+    </table></div>
+    <div class="table-wrap"><table>
+<thead><tr><th>Benchmark</th><th>Mean time</th><th>Throughput</th></tr></thead>
+<tbody>
+<tr><td><code>kernel/md1_100k_customers</code></td><td>6.71 ms</td><td>29.8 M events/s</td></tr>
+<tr><td><code>disagg/1P1D_1000req</code></td><td>3.79 ms</td><td>5.3 M events/s</td></tr>
+<tr><td><code>disagg/colocated_1000req</code></td><td>4.40 ms</td><td>6.2 M events/s</td></tr>
+</tbody></table></div>
+    <p class="src">Source: <a href="https://github.com/BrendanJamesLynskey/Rust_DES_Kernel/blob/main/examples/results.md">examples/results.md</a> in Rust_DES_Kernel</p>
+    <p>The bare kernel handles about 30 million events a second; the full serving engine, which does real work per event (cost model, batching, accounting), handles 5 to 6 million.</p>
+</section>
+
+<section class="slide" id="slide-12">
+    <div class="slide-number">12</div>
+    <h2>Testing in Rust: cargo test and proptest</h2>
+    <p>Tests live next to the code (<code>#[cfg(test)] mod tests</code>, which can reach private items) or in <code>tests/</code> (integration tests, which see only the public API). <a href="https://docs.rs/proptest">proptest</a> adds property-based testing: generate inputs, check a property, shrink any failure to a minimal case.</p>
+    <div class="code-block">
+        <div class="code-header">tests/kernel.rs: the ordering contract, for any sequence of schedules <a class="src-link" href="https://github.com/BrendanJamesLynskey/Rust_DES_Kernel/blob/main/tests/kernel.rs">source</a></div>
+        <pre><code><span class="mac">proptest!</span> {
+    <span class="cm">/// Whatever is scheduled, events come out in (time, priority, insertion) order.</span>
+    #[test]
+    <span class="kw">fn</span> <span class="fn">pops_in_time_priority_fifo_order</span>(ops <span class="kw">in</span> prop::collection::<span class="fn">vec</span>((0u8..<span class="num">20</span>, any::&lt;bool&gt;()), <span class="num">1</span>..<span class="num">300</span>)) {
+        <span class="kw">let</span> <span class="kw">mut</span> s = <span class="type">Scheduler</span>::<span class="fn">new</span>();
+        <span class="kw">for</span> (k, &amp;(t, urgent)) <span class="kw">in</span> ops.<span class="fn">iter</span>().<span class="fn">enumerate</span>() {
+            <span class="kw">let</span> p = <span class="kw">if</span> urgent { <span class="type">Priority</span>::<span class="type">Urgent</span> } <span class="kw">else</span> { <span class="type">Priority</span>::<span class="type">Normal</span> };
+            s.<span class="fn">schedule_at</span>(t <span class="kw">as</span> f64, p, (t, p, k));
+        }
+        <span class="kw">let</span> <span class="kw">mut</span> last: <span class="type">Option</span>&lt;(u8, <span class="type">Priority</span>, usize)&gt; = <span class="type">None</span>;
+        <span class="kw">while</span> <span class="kw">let</span> <span class="type">Some</span>((time, e)) = s.<span class="fn">pop</span>() {
+            <span class="mac">prop_assert_eq!</span>(time, e.<span class="num">0</span> <span class="kw">as</span> f64);
+            <span class="kw">if</span> <span class="kw">let</span> <span class="type">Some</span>(l) = last {
+                <span class="mac">prop_assert!</span>(l &lt; e, <span class="str">"{:?} came out before {:?}"</span>, l, e);
+            }
+            last = <span class="type">Some</span>(e);
+        }
+        <span class="mac">prop_assert_eq!</span>(s.<span class="fn">processed</span>() <span class="kw">as</span> usize, ops.<span class="fn">len</span>());
+    }
+}</code></pre>
+    </div>
+    <div class="table-wrap"><table>
+        <thead><tr><th>File</th><th>Kind</th><th>Checks</th></tr></thead>
+        <tbody>
+            <tr><td><code>src/*.rs</code></td><td>Unit</td><td>Ordering and tie-breaks; CPython's random stream; <code>fsum</code>; cost-model regimes</td></tr>
+            <tr><td><code>tests/kernel.rs</code></td><td>Analytic + property</td><td>M/D/1 against Pollaczek&ndash;Khinchine; pop order for random schedules</td></tr>
+            <tr><td><code>tests/props.rs</code></td><td>Property</td><td>For random configurations: conservation, ordered timestamps, KV released, TDP respected, Little's law, determinism</td></tr>
+            <tr><td><code>tests/golden.rs</code>, <code>tests/pymath.rs</code></td><td>Golden</td><td>Recorded Python runs, Python-generated workloads, and CPython's <code>fsum</code> and <code>//</code>, reproduced bit for bit</td></tr>
+            <tr><td><code>tests/cli.rs</code></td><td>End to end</td><td>The binary's JSON, text report, sweep and exit codes</td></tr>
+        </tbody>
+    </table></div>
+    <p>Deck 06 covers the strategy behind these layers, mutation testing (which found gaps here that 95% line coverage did not), and the Python and C++ equivalents.</p>
+</section>
+
+<section class="slide" id="slide-13">
+    <div class="slide-number">13</div>
+    <h2>What to Take Away</h2>
+    <ul>
+        <li><strong>The kernel is the Python kernel with types</strong>: <code>BinaryHeap&lt;Reverse&lt;Entry&gt;&gt;</code>, ordered by time (<code>total_cmp</code>), priority and a sequence number.</li>
+        <li><strong>Events are enums; the model is a trait</strong>; exhaustive <code>match</code> means a new event kind cannot be silently ignored.</li>
+        <li><strong>Own state in arenas, pass indices.</strong> It satisfies the borrow checker without <code>Rc&lt;RefCell&gt;</code>, and indices can be logged and replayed.</li>
+        <li><strong>SimPy processes become state machines</strong>, one state per <code>yield</code>, with SimPy's wake-up rules copied exactly.</li>
+        <li><strong>Result for expected failures, panic for broken invariants</strong>, and validate configuration before the run starts.</li>
+        <li><strong>rayon makes sweeps parallel and safe</strong>; clippy, rustfmt, proptest and criterion are one command each.</li>
+    </ul>
+    <ul class="res-list">
+        <li><a href="https://github.com/BrendanJamesLynskey/Rust_DES_Kernel">Rust_DES_Kernel</a><span class="what">All the code on these slides, with its tests and recorded results.</span></li>
+        <li><a href="https://brendanjameslynskey.github.io/SimEng_02_Rust_Python_PyO3/">Deck 02: Porting a Simulator Core with PyO3</a><span class="what">Exposing this engine to Python and proving it gives identical answers.</span></li>
+        <li><a href="https://github.com/BrendanJamesLynskey/Interview_Rust">Interview_Rust</a><span class="what">Rust interview questions: ownership, lifetimes, traits, concurrency.</span></li>
+        <li><a href="https://brendanjameslynskey.github.io/InfSim_02_Simulator_Development_Tutorial/">LLM Inference Simulators 02: Simulator Development Tutorial</a><span class="what">The same kernel, built step by step in Python, and SimPy's vocabulary.</span></li>
+        <li><a href="https://doc.rust-lang.org/book/">The Rust Programming Language</a><span class="what">The official book; chapters 4 (ownership), 10 (traits) and 16 (concurrency) are the ones this deck leans on.</span></li>
+    </ul>
+</section>
+
+<!-- ════════════════════════════════════ Footer ════════════════════════════════════ -->
+<footer class="footer">
+    <p>Part of the <a href="https://github.com/BrendanJamesLynskey/SimEng_Hub_Toolkit">Simulation Engineering Toolkit series</a> &middot; <a href="https://brendanjameslynskey.github.io/SimEng_Hub_Toolkit/#glossary">glossary: every concept and where it is explained</a> &middot; code: <a href="https://github.com/BrendanJamesLynskey/Rust_DES_Kernel">Rust_DES_Kernel</a></p>
+    <p style="margin-top: 0.5rem; font-size: 0.8rem;"><a href="https://brendanjameslynskey.github.io/SimEng_02_Rust_Python_PyO3/">02 Rust and Python: Porting a Simulator Core with PyO3 &rarr;</a></p>
+    <p style="margin-top: 0.5rem; font-size: 0.8rem;">Interview questions: <a href="https://github.com/BrendanJamesLynskey/Interview_Rust">Interview_Rust</a> &middot; sister series: <a href="https://github.com/BrendanJamesLynskey/LLM_Hub_Inference_Simulators">LLM Inference Simulators</a> &middot; <a href="https://github.com/BrendanJamesLynskey/FHE_Hub_Accelerator_Simulators">FHE Accelerator Simulators</a></p>
+</footer>
+
+<script>
+    // Smooth scroll for TOC links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    });
+
+    // Subtle fade-in on scroll
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.slide').forEach(slide => {
+        slide.style.opacity = '0';
+        slide.style.transform = 'translateY(30px)';
+        slide.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(slide);
+    });
+</script>
+
+</body>
+</html>
