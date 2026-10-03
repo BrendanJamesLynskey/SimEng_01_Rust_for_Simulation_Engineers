@@ -1381,15 +1381,16 @@
     <div class="table-wrap"><table>
 <thead><tr><th>What</th><th>Runs</th><th>Wall time</th><th>Speed-up over sequential</th></tr></thead>
 <tbody>
-<tr><td>Rust via PyO3, sequential</td><td>8 x 4,000 requests</td><td>0.460 s</td><td>1.0x</td></tr>
-<tr><td>Rust via PyO3, 8 Python threads (GIL released)</td><td>8 x 4,000 requests</td><td>0.167 s</td><td>2.8x</td></tr>
-<tr><td>Rust <code>simulate_many</code> (rayon, one call)</td><td>8 x 4,000 requests</td><td>0.175 s</td><td>2.6x</td></tr>
-<tr><td>Python SimPy, sequential</td><td>4 x 1,000 requests</td><td>1.05 s</td><td>1.0x</td></tr>
-<tr><td>Python SimPy, 4 threads (GIL held)</td><td>4 x 1,000 requests</td><td>2.70 s</td><td>0.4x</td></tr>
-<tr><td>Python SimPy, 4 processes</td><td>4 x 1,000 requests</td><td>0.31 s</td><td>3.3x</td></tr>
+<tr><td>Rust via PyO3, sequential</td><td>8 x 4,000 requests</td><td>0.430 s</td><td>1.0x</td></tr>
+<tr><td>Rust via PyO3, 8 Python threads (GIL released)</td><td>8 x 4,000 requests</td><td>0.144 s</td><td>3.0x</td></tr>
+<tr><td>Rust <code>simulate_many</code> (rayon, one call)</td><td>8 x 4,000 requests</td><td>0.131 s</td><td>3.3x</td></tr>
+<tr><td>Python SimPy, sequential</td><td>4 x 1,000 requests</td><td>1.11 s</td><td>1.0x</td></tr>
+<tr><td>Python SimPy, 4 threads (GIL held)</td><td>4 x 1,000 requests</td><td>2.40 s</td><td>0.5x</td></tr>
+<tr><td>Python SimPy, 4 processes</td><td>4 x 1,000 requests</td><td>0.30 s</td><td>3.7x</td></tr>
 </tbody></table></div>
     <p class="src">Source: <a href="https://github.com/BrendanJamesLynskey/Rust_DES_Kernel/blob/main/examples/results.md">examples/results.md</a> in Rust_DES_Kernel</p>
     <p>The rows that matter here are the first three: rayon inside one call, or plain Python threads calling a Rust function that releases the GIL, both reach about 3&times; on four physical cores. Deck 02 explains the GIL rows.</p>
+    <p class="src">This slide's and the next one's tables were re-measured on 2026-10-03, after the simulator's cost model was corrected: steps no longer charge the whole embedding table, and decode attention includes each new token's attention to itself (<a href="https://brendanjameslynskey.github.io/SimEng_10_PyTorch_ONNX_Frontends/#slide-09">deck 10</a>).</p>
 </section>
 
 <section class="slide" id="slide-11">
@@ -1409,9 +1410,9 @@
     <div class="table-wrap"><table>
 <thead><tr><th>Benchmark</th><th>Mean time</th><th>Throughput</th></tr></thead>
 <tbody>
-<tr><td><code>kernel/md1_100k_customers</code></td><td>6.71 ms</td><td>29.8 M events/s</td></tr>
-<tr><td><code>disagg/1P1D_1000req</code></td><td>3.79 ms</td><td>5.3 M events/s</td></tr>
-<tr><td><code>disagg/colocated_1000req</code></td><td>4.40 ms</td><td>6.2 M events/s</td></tr>
+<tr><td><code>kernel/md1_100k_customers</code></td><td>6.78 ms</td><td>29.5 M events/s</td></tr>
+<tr><td><code>disagg/1P1D_1000req</code></td><td>3.94 ms</td><td>5.2 M events/s</td></tr>
+<tr><td><code>disagg/colocated_1000req</code></td><td>4.52 ms</td><td>6.1 M events/s</td></tr>
 </tbody></table></div>
     <p class="src">Source: <a href="https://github.com/BrendanJamesLynskey/Rust_DES_Kernel/blob/main/examples/results.md">examples/results.md</a> in Rust_DES_Kernel</p>
     <p>The bare kernel handles about 30 million events a second; the full serving engine, which does real work per event (cost model, batching, accounting), handles 5 to 6 million.</p>
