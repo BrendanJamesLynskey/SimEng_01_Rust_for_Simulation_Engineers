@@ -1328,6 +1328,27 @@
         <div class="code-header">src/disagg/engine.rs: configuration errors are values <a class="src-link" href="https://github.com/BrendanJamesLynskey/Rust_DES_Kernel/blob/main/src/disagg/engine.rs">source</a></div>
         <pre><code><span class="kw">pub</span> <span class="kw">fn</span> <span class="fn">build</span>(&amp;<span class="kw">self</span>) -&gt; <span class="type">Result</span>&lt;<span class="type">SimConfig</span>, <span class="type">ConfigError</span>&gt; {
     <span class="kw">let</span> unknown = |what: &amp;str, v: &amp;str| <span class="type">ConfigError</span>(<span class="mac">format!</span>(<span class="str">"unknown {what} {v:?}"</span>));
+    <span class="kw">let</span> names = [
+        <span class="type">Some</span>(&amp;<span class="kw">self</span>.model),
+        <span class="type">Some</span>(&amp;<span class="kw">self</span>.device),
+        <span class="kw">self</span>.prefill_device.<span class="fn">as_ref</span>(),
+        <span class="kw">self</span>.decode_device.<span class="fn">as_ref</span>(),
+    ];
+    <span class="kw">for</span> key <span class="kw">in</span> names.<span class="fn">into_iter</span>().<span class="fn">flatten</span>() {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="type">Some</span>(why) = hardware::<span class="fn">python_js_only</span>(key) {
+            <span class="kw">return</span> <span class="type">Err</span>(<span class="type">ConfigError</span>(<span class="mac">format!</span>(<span class="str">"{key} {why}"</span>)));
+        }
+    }
+    <span class="kw">if</span> <span class="kw">let</span> <span class="type">Some</span>(t) = &amp;<span class="kw">self</span>.kv_transit {
+        <span class="kw">return</span> <span class="type">Err</span>(<span class="type">ConfigError</span>(<span class="mac">format!</span>(
+            <span class="str">"kv_transit {t:?}: KV hand-off compression is Python and JS only, not in the Rust port"</span>
+        )));
+    }
+    <span class="kw">let</span> dev = |key: &amp;<span class="type">Option</span>&lt;<span class="type">String</span>&gt;| -&gt; <span class="type">Result</span>&lt;<span class="type">Option</span>&lt;<span class="type">Accelerator</span>&gt;, <span class="type">ConfigError</span>&gt; {
+        key.<span class="fn">as_ref</span>()
+            .<span class="fn">map</span>(|k| hardware::<span class="fn">device</span>(k).<span class="fn">ok_or_else</span>(|| <span class="fn">unknown</span>(<span class="str">"device"</span>, k)))
+            .<span class="fn">transpose</span>()
+    };
     <span class="kw">let</span> mode = <span class="kw">match</span> <span class="kw">self</span>.mode.<span class="fn">as_str</span>() {
         <span class="str">"disagg"</span> =&gt; <span class="type">Mode</span>::<span class="type">Disagg</span>,
         <span class="str">"colocated"</span> =&gt; <span class="type">Mode</span>::<span class="type">Colocated</span>,
